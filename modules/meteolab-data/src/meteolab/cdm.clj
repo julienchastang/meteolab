@@ -20,16 +20,31 @@
                       (-> % .getStandardUrlName))
              (.getAccess x))))
 
+(defn- read-catalog-xml
+  [catalog-uri]
+  (.readXML (InvCatalogFactory. "default" true) catalog-uri))
+
+(defn catalog-vars
+  "Get THREDDS variables from XML catalog given THREDDS URI."
+  [catalog-uri]
+  (when-let
+      [ds (-> (read-catalog-xml catalog-uri) .getDataset)]
+    (set (apply
+          concat
+          (map #(map (memfn getName) %)
+               (map (memfn getVariableList)
+                    (.getVariables ds)))))))
+
 (defn datasets
   "Given a THREDDS catalog, hands back a list of datasets as THREDDS URIs"
   [catalog-uri]
   (map #(zipmap [:name :uri]
-         (vector (.getName %)
+                (vector (.getName %)
                         (-> % access :ncdods)))
-       (let [cat (.readXML (InvCatalogFactory. "default" true) catalog-uri)]
-         (sort-by millisec
-                  (filter #(not (branch? %))
-                          (tree-seq branch? #(.getDatasets %) cat))))))
+       (sort-by millisec
+                (filter #(not (branch? %))
+                        (tree-seq branch? #(.getDatasets %)
+                                  (read-catalog-xml catalog-uri))))))
 
 (defn dataset-latest
   "Given a THREDDS catalog, hands back a list of datasets as THREDDS URIs"
@@ -55,7 +70,7 @@
 (defn time-series
   "Returns time series for data that can be read through the CDM API."
   [dataset v [lat lon z]]
-  (with-open [gds (GridDataset/open (:uri dataset))]
+  (with-open [gds  (GridDataset/open (:uri dataset))]
     (let [grid (.findGridByName gds v)
           unit (.parse (UnitFormatManager/instance)
                        (-> grid .getVariable .getUnitsString))
@@ -65,9 +80,9 @@
                         (memfn getTime)
                         (-> gcs .getTimeAxis1D .getTimeDates)))
           [x y]  (.findXYindexFromLatLon gcs lat lon (int-array 2))
-          d (doall (map
-                    #(-> (.readDataSlice grid % z y x) .get)
-                    (range (count dates))))]
+          d  (doall (pmap
+                     #(-> (.readDataSlice grid % z y x) .get)
+                     (range (count dates))))]
       {:name (:name dataset) :time dates
        :data {:vals d :var v :unit unit :desc desc}})))
 
