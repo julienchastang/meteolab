@@ -15,3 +15,16 @@
                    :desc "temperature"}}]
     (is (= (-> (unit-convert ts "celsius") :data :vals)
            '(-273.15 0.0)))))
+
+
+(deftest catalog-vars-bogus
+  (let [v (catalog-vars "bogus")]
+       (is (empty? v))))
+
+(deftest datasets-bogus
+  (let [ds (datasets "bogus")]
+       (is (empty? ds))))
+
+(deftest dataset-latest-bogus
+  (let [ds (dataset-latest "bogus")]
+       (is (nil? ds))))
