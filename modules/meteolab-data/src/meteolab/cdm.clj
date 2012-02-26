@@ -89,7 +89,7 @@
 (defn unit-convert
   "Given a time series and a unit string, convert the time series to the unit.
 If the unit is not compatible, the original data is handed back"
-  [ts unit]
+  [unit ts]
   (let [from-unit (-> ts :data :unit)
         to-unit (.parse (UnitFormatManager/instance) unit)]
     (if (.isCompatible from-unit to-unit)

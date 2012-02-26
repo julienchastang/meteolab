@@ -13,7 +13,7 @@
                    :var "temperature"
                    :unit (.parse (UnitFormatManager/instance) "K")
                    :desc "temperature"}}]
-    (is (= (-> (unit-convert ts "celsius") :data :vals)
+    (is (= (-> (unit-convert "celsius" ts) :data :vals)
            '(-273.15 0.0)))))
 
 
