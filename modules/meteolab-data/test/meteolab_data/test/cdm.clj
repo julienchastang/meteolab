@@ -11,7 +11,7 @@
   (let [ts {:time '(0 1 2)
             :data {:vals '(0.0 273.15)
                    :var "temperature"
-                   :unit (.parse (UnitFormatManager/instance) "K")
+                   :unit "K"
                    :desc "temperature"}}]
     (is (= (-> (unit-convert "celsius" ts) :data :vals)
            '(-273.15 0.0)))))

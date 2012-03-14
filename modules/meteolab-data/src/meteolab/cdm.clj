@@ -72,8 +72,7 @@
   [dataset v [lat lon z]]
   (with-open [gds  (GridDataset/open (:uri dataset))]
     (let [grid (.findGridByName gds v)
-          unit (.parse (UnitFormatManager/instance)
-                       (-> grid .getVariable .getUnitsString))
+          unit (-> grid .getVariable .getUnitsString)
           desc (-> grid .getVariable .getDescription)
           gcs (.getCoordinateSystem grid)
           dates (doall (map
@@ -90,8 +89,9 @@
   "Given a time series and a unit string, convert the time series to the unit.
 If the unit is not compatible, the original data is handed back"
   [unit ts]
-  (let [from-unit (-> ts :data :unit)
-        to-unit (.parse (UnitFormatManager/instance) unit)]
+  (let [parse-unit #(.parse (UnitFormatManager/instance) %)
+        from-unit (parse-unit (-> ts :data :unit))
+        to-unit (parse-unit unit)]
     (if (.isCompatible from-unit to-unit)
       (assoc-in
        (update-in ts [:data :vals]
