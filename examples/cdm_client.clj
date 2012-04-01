@@ -28,7 +28,7 @@
             chart (time-series-plot
                    (:time fmodel)
                    (-> fmodel :data :vals)
-                   :title (join " " (list (-> fmodel :data :desc) "@" lat lon))
+                   :title (join " " (list (-> fmodel :data :name) "@" lat lon))
                    :x-label "time"
                    :y-label (-> fmodel :data :unit str)
                    :series-label (-> fmodel :name)

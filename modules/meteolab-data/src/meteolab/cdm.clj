@@ -51,18 +51,22 @@
   [catalog-uri]
   (last (datasets catalog-uri)))
 
+
+(defn- attribute-map
+  "Takes a list of attributes and put them in a map"
+  [attrbs] (into {}
+                 (map (fn [y]
+                        (vector
+                         (keyword (.getName y))
+                         (.getObject (.getValues y) 0))) attrbs)))
+
 (defn metadata
   "Get metadata associated with THREDDS dataset"
   [dataset]
   (with-open [gds (GridDataset/open (:uri dataset))]
     (let [vrs (.getDataVariables gds)
           atbs (map (memfn getAttributes) vrs)
-          md (map (fn [x]
-                    (into {}
-                          (map (fn [y]
-                                 (vector
-                                  (keyword (.getName y))
-                                  (.getObject (.getValues y) 0))) x))) atbs)]
+          md (map attribute-map atbs)]
       (zipmap
        (map (memfn getName) vrs)
        md))))
@@ -74,6 +78,7 @@
     (let [grid (.findGridByName gds v)
           unit (-> grid .getVariable .getUnitsString)
           desc (-> grid .getVariable .getDescription)
+          name (-> grid .getVariable .getAttributes attribute-map :GRIB_param_name)
           gcs (.getCoordinateSystem grid)
           dates (doall (map
                         (memfn getTime)
@@ -83,7 +88,7 @@
                      #(-> (.readDataSlice grid % z y x) .get)
                      (range (count dates))))]
       {:name (:name dataset) :time dates
-       :data {:vals d :var v :unit unit :desc desc}})))
+       :data {:vals d :var v :name name :unit unit :desc desc}})))
 
 (defn unit-convert
   "Given a time series and a unit string, convert the time series to the unit.
