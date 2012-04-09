@@ -21,14 +21,14 @@
              (.getAccess x))))
 
 (defn- read-catalog-xml
-  [catalog-uri]
-  (.readXML (InvCatalogFactory. "default" true) catalog-uri))
+  [uri]
+  (.readXML (InvCatalogFactory. "default" true) uri))
 
 (defn catalog-vars
   "Get THREDDS variables from XML catalog given THREDDS URI."
-  [catalog-uri]
+  [uri]
   (when-let
-      [ds (-> (read-catalog-xml catalog-uri) .getDataset)]
+      [ds (-> (read-catalog-xml uri) .getDataset)]
     (set (apply
           concat
           (map #(map (memfn getName) %)
@@ -37,19 +37,19 @@
 
 (defn datasets
   "Given a THREDDS catalog, hands back a list of datasets as THREDDS URIs"
-  [catalog-uri]
+  [uri]
   (map #(zipmap [:name :uri]
                 (vector (.getName %)
                         (-> % access :ncdods)))
        (sort-by millisec
                 (filter #(not (branch? %))
                         (tree-seq branch? #(.getDatasets %)
-                                  (read-catalog-xml catalog-uri))))))
+                                  (read-catalog-xml uri))))))
 
 (defn dataset-latest
   "Given a THREDDS catalog, hands back a list of datasets as THREDDS URIs"
-  [catalog-uri]
-  (last (datasets catalog-uri)))
+  [uri]
+  (last (datasets uri)))
 
 
 (defn- attribute-map
@@ -61,9 +61,9 @@
                          (.getObject (.getValues y) 0))) attrbs)))
 
 (defn metadata
-  "Get metadata associated with THREDDS dataset"
-  [dataset]
-  (with-open [gds (GridDataset/open (:uri dataset))]
+  "Get metadata associated with THREDDS URI"
+  [uri]
+  (with-open [gds (GridDataset/open uri)]
     (let [vrs (.getDataVariables gds)
           atbs (map (memfn getAttributes) vrs)
           md (map attribute-map atbs)]
@@ -76,17 +76,22 @@
   [dataset v [lat lon z]]
   (with-open [gds  (GridDataset/open (:uri dataset))]
     (let [grid (.findGridByName gds v)
+          gcs (.getCoordinateSystem grid)
+          [x y]  (.findXYindexFromLatLon gcs lat lon (int-array 2))
+          valid? (and (>= x 0) (>= y 0))
           unit (-> grid .getVariable .getUnitsString)
           desc (-> grid .getVariable .getDescription)
           name (-> grid .getVariable .getAttributes attribute-map :GRIB_param_name)
-          gcs (.getCoordinateSystem grid)
-          dates (doall (map
-                        (memfn getTime)
-                        (-> gcs .getTimeAxis1D .getTimeDates)))
-          [x y]  (.findXYindexFromLatLon gcs lat lon (int-array 2))
-          d  (doall (pmap
-                     #(-> (.readDataSlice grid % z y x) .get)
-                     (range (count dates))))]
+          dates (if valid?
+                  (doall (map
+                          (memfn getTime)
+                          (-> gcs .getTimeAxis1D .getTimeDates)))
+                  [])
+          d (if valid?
+               (doall (pmap
+                       #(-> (.readDataSlice grid % z y x) .get)
+                       (range (count dates))))
+               [])]
       {:name (:name dataset) :time dates
        :data {:vals d :var v :name name :unit unit :desc desc}})))
 
