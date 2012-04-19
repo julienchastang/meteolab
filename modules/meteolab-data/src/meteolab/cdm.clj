@@ -88,10 +88,8 @@
                           (-> gcs .getTimeAxis1D .getTimeDates)))
                   [])
           d (if valid?
-               (doall (pmap
-                       #(-> (.readDataSlice grid % z y x) .get)
-                       (range (count dates))))
-               [])]
+              (-> (.readDataSlice grid -1 z y x) .getStorage seq)
+              [])]
       {:name (:name dataset) :time dates
        :data {:vals d :var v :name name :unit unit :desc desc}})))
 
