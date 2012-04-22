@@ -36,7 +36,7 @@
                     (.getVariables ds)))))))
 
 (defn datasets
-  "Given a THREDDS catalog, hands back a list of datasets as THREDDS URIs"
+  "Given a THREDDS catalog, hands back a list of datasets"
   [uri]
   (map #(zipmap [:name :uri]
                 (vector (.getName %)
@@ -47,7 +47,7 @@
                                   (read-catalog-xml uri))))))
 
 (defn dataset-latest
-  "Given a THREDDS catalog, hands back a list of datasets as THREDDS URIs"
+  "Given a THREDDS catalog, hands back the latest dataset"
   [uri]
   (last (datasets uri)))
 
