@@ -5,22 +5,22 @@
            [ucar.units UnitFormatManager]
            [thredds.catalog InvCatalogFactory]))
 
-(defn- branch? [x]
+(defn ^:private branch? [x]
   (if (instance? thredds.catalog.InvCatalogImpl x)
     true
     (when (instance? thredds.catalog.InvDatasetImpl x)
       (-> x .getAccess empty?))))
 
-(defn- millisec [x]
+(defn ^:private millisec [x]
   (-> x .getTimeCoverage .getStart .getDate .getTime))
 
-(defn- access [x]
+(defn ^:private access [x]
   (into {}
         (map #(vector (-> % .getService .getName keyword)
                       (-> % .getStandardUrlName))
              (.getAccess x))))
 
-(defn- read-catalog-xml
+(defn ^:private read-catalog-xml
   [uri]
   (.readXML (InvCatalogFactory. "default" true) uri))
 
@@ -36,7 +36,7 @@
                     (.getVariables ds)))))))
 
 (defn datasets
-  "Given a THREDDS catalog, hands back a list of datasets"
+  "Given a THREDDS catalog, hands back a list of datasets."
   [uri]
   (map #(zipmap [:name :uri]
                 (vector (.getName %)
@@ -51,8 +51,7 @@
   [uri]
   (last (datasets uri)))
 
-
-(defn- attribute-map
+(defn ^:private attribute-map
   "Takes a list of attributes and put them in a map"
   [attrbs] (into {}
                  (map (fn [y]
