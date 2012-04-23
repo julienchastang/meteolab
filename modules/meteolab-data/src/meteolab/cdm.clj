@@ -70,6 +70,10 @@
        (map (memfn getName) vrs)
        md))))
 
+(defn ^:private  qc-filter [k v p]
+  (let [m (filter p (zipmap k v))]
+    (vector (keys m) (vals m))))
+
 (defn time-series
   "Returns time series for data that can be read through the CDM API."
   [dataset v [lat lon z]]
@@ -86,11 +90,12 @@
                           (memfn getTime)
                           (-> gcs .getTimeAxis1D .getTimeDates)))
                   [])
-          d (if valid?
+          data (if valid?
               (-> (.readDataSlice grid -1 z y x) .getStorage seq)
-              [])]
-      {:name (:name dataset) :time dates
-       :data {:vals d :var v :name name :unit unit :desc desc}})))
+              [])
+          [qcdates qcdata] (qc-filter dates data (fn [[k v]] (< v 9e36)))] ; apply extreme value filter
+      {:name (:name dataset) :time qcdates
+       :data {:vals qcdata :var v :name name :unit unit :desc desc}})))
 
 (defn unit-convert
   "Given a time series and a unit string, convert the time series to the unit.
