@@ -16,6 +16,10 @@
     (is (= (-> (unit-convert "celsius" ts) :data :vals)
            '(-273.15 0.0)))))
 
+(deftest unit-conversion-empty
+  (let [ts {}]
+    (is (= (-> (unit-convert "celsius" ts))
+           {}))))
 
 (deftest catalog-vars-bogus
   (let [v (catalog-vars "bogus")]

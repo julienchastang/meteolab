@@ -102,15 +102,17 @@
   "Given a time series and a unit string, convert the time series to the unit.
 If the unit is not compatible, the original data is handed back"
   [unit ts]
-  (let [parse-unit #(.parse (UnitFormatManager/instance) %)
-        from-unit (parse-unit (-> ts :data :unit))
-        to-unit (parse-unit unit)]
-    (if (.isCompatible from-unit to-unit)
-      (assoc-in
-       (update-in ts [:data :vals]
-                  (fn [c]
-                    (map
-                     #(.convertTo from-unit (double  %) to-unit)
-                     c)))
-       [:data :unit] unit)
-      ts)))
+  (if-let [f-unit (-> ts :data :unit)]
+    (let [parse-unit #(.parse (UnitFormatManager/instance) %)
+          from-unit (parse-unit f-unit)
+          to-unit (parse-unit unit)]
+      (if (.isCompatible from-unit to-unit)
+        (assoc-in
+         (update-in ts [:data :vals]
+                    (fn [c]
+                      (map
+                       #(.convertTo from-unit (double  %) to-unit)
+                       c)))
+         [:data :unit] unit)
+        ts))
+    ts))
