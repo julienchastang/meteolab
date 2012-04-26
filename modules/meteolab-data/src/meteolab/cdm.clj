@@ -78,24 +78,25 @@
   "Returns time series for data that can be read through the CDM API."
   [dataset v [lat lon z]]
   (with-open [gds  (GridDataset/open (:uri dataset))]
-    (let [grid (.findGridByName gds v)
-          gcs (.getCoordinateSystem grid)
-          [x y]  (.findXYindexFromLatLon gcs lat lon (int-array 2))
-          valid? (and (>= x 0) (>= y 0))
-          unit (-> grid .getVariable .getUnitsString)
-          desc (-> grid .getVariable .getDescription)
-          name (-> grid .getVariable .getAttributes attribute-map :GRIB_param_name)
-          dates (if valid?
-                  (doall (map
-                          (memfn getTime)
-                          (-> gcs .getTimeAxis1D .getTimeDates)))
-                  [])
-          data (if valid?
-              (-> (.readDataSlice grid -1 z y x) .getStorage seq)
-              [])
-          [qcdates qcdata] (qc-filter dates data (fn [[k v]] (< v 9e36)))] ; apply extreme value filter
-      {:name (:name dataset) :time qcdates
-       :data {:vals qcdata :var v :name name :unit unit :desc desc}})))
+    (if-let [grid (.findGridByName gds v)]
+      (let [gcs (.getCoordinateSystem grid)
+            [x y]  (.findXYindexFromLatLon gcs lat lon (int-array 2))
+            valid? (and (>= x 0) (>= y 0))
+            unit (-> grid .getVariable .getUnitsString)
+            desc (-> grid .getVariable .getDescription)
+            name (-> grid .getVariable .getAttributes attribute-map :GRIB_param_name)
+            dates (if valid?
+                    (doall (map
+                            (memfn getTime)
+                            (-> gcs .getTimeAxis1D .getTimeDates)))
+                    [])
+            data (if valid?
+                   (-> (.readDataSlice grid -1 z y x) .getStorage seq)
+                   [])
+            [qcdates qcdata] (qc-filter dates data (fn [[k v]] (< v 9e36)))] ; apply extreme value filter
+        {:name (:name dataset) :time qcdates
+         :data {:vals qcdata :var v :name name :unit unit :desc desc}})
+      {})))
 
 (defn unit-convert
   "Given a time series and a unit string, convert the time series to the unit.
