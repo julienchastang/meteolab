@@ -76,11 +76,16 @@
 
 (defn time-series
   "Returns time series for data that can be read through the CDM API."
-  [dataset v [lat lon z]]
+  [dataset v [lat lon level]]
   (with-open [gds  (GridDataset/open (:uri dataset))]
     (if-let [grid (.findGridByName gds v)]
       (let [gcs (.getCoordinateSystem grid)
             [x y]  (.findXYindexFromLatLon gcs lat lon (int-array 2))
+            v-axis (.getVerticalAxis gcs)
+            lvls (if v-axis (-> v-axis .getCoordValues vec) [0])
+            z (max 0 (.indexOf lvls (double level)))
+            lvl (nth lvls z)
+            z-unit (when v-axis (-> v-axis .getAttributes attribute-map :units))
             valid? (and (>= x 0) (>= y 0))
             unit (-> grid .getVariable .getUnitsString)
             desc (-> grid .getVariable .getDescription)
@@ -91,11 +96,13 @@
                             (-> gcs .getTimeAxis1D .getTimeDates)))
                     [])
             data (if valid?
-                   (-> (.readDataSlice grid -1 z y x) .getStorage seq)
+                   (-> (.readDataSlice grid -1  z y x) .getStorage seq)
                    [])
-            [qcdates qcdata] (qc-filter dates data (fn [[k v]] (< v 9e36)))] ; apply extreme value filter
-        {:name (:name dataset) :time qcdates
-         :data {:vals qcdata :var v :name name :unit unit :desc desc}})
+            [qcdates qcdata] (qc-filter dates data (fn [[k v]] (< v 9e36))) ; apply extreme value filter
+            ds {:name (:name dataset) :time qcdates :lat lat :lon lon
+                :data {:vals qcdata :var v :name name :unit unit :desc desc}}
+            dsz (if v-axis (assoc ds :z lvl :z-unit z-unit) ds)]
+        dsz)
       {})))
 
 (defn unit-convert
