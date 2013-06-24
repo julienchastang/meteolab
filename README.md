@@ -1,13 +1,9 @@
 # meteolab
 
-A Clojure library designed to ... well, that part is up to you.
-
-## Usage
-
-FIXME
+Matlab for meteorologists. Clojure based programming environment built on Incanter and JFreeChart.
 
 ## License
 
-Copyright © 2013 FIXME
+Copyright (C) 2013 Julien Chastang
 
 Distributed under the Eclipse Public License, the same as Clojure.
