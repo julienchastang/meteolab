@@ -42,10 +42,13 @@
                 nmodel))
           (view chart)))))
 
+;; (def cats
+;;   ["http://thredds.ucar.edu/thredds/catalog/grib/NCEP/GFS/CONUS_80km/files/catalog.xml"
+;;    "http://thredds.ucar.edu/thredds/catalog/fmrc/NCEP/GFS/Global_0p5deg/files/catalog.xml"
+;;    "http://thredds.ucar.edu/thredds/catalog/fmrc/NCEP/NAM/CONUS_12km/files/catalog.xml"])
+
 (def cats
-  ["http://motherlode.ucar.edu/thredds/catalog/fmrc/NCEP/GFS/CONUS_80km/runs/catalog.xml"
-   "http://motherlode.ucar.edu/thredds/catalog/fmrc/NCEP/GFS/Global_0p5deg/runs/catalog.xml"
-   "http://motherlode.ucar.edu/thredds/catalog/fmrc/NCEP/NAM/CONUS_12km/runs/catalog.xml"])
+  ["http://thredds.ucar.edu/thredds/catalog/grib/NCEP/GFS/CONUS_80km/files/catalog.xml"])
 
 (def vs [["Temperature_height_above_ground" "Fahrenheit"]
          ["Relative_humidity_height_above_ground"]

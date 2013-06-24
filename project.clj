@@ -1,9 +1,13 @@
-(defproject meteolab "1.0.0-SNAPSHOT"
-  :description "Matlab for meteorologists. Clojure based programming environment built on Incanter and JFreeChart."
-  :dependencies [[org.clojure/clojure "1.3.0"]
-                 [edu.ucar/netcdf "4.3.2-SNAPSHOT"]
-                 [edu.ucar/opendap "4.3.2-SNAPSHOT"]
-                 [incanter/incanter-charts "1.3.0-SNAPSHOT"]
-                 [meteolab/meteolab-data "1.0.0-SNAPSHOT"
-                  :exclusions [org.clojure/clojure]]]
-  :dev-dependencies [[repl-utils/repl-utils "1.0.0-SNAPSHOT"]])
+(defproject meteolab "0.1.0-SNAPSHOT"
+  :description "FIXME: write description"
+  :url "http://example.com/FIXME"
+  :license {:name "Eclipse Public License"
+            :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :scm {:name "git" :url "https://github.com/julienchastang/meteolab"}
+  :min-lein-version "2.0.0"
+  :dependencies [[org.clojure/clojure "1.5.1"]
+                 [edu.ucar/netcdf "4.3.16"]
+                 [edu.ucar/opendap "4.3.16"]
+                 [incanter/incanter-charts "1.5.1"]
+                 [meteolab/meteolab-data "0.1.0-SNAPSHOT"]]
+  :jvm-opts ["-Xmx1g"])

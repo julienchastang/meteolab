@@ -1,4 +1,4 @@
-(ns meteolab-data.test.cdm
+(ns meteolab.cdm_tests
   (:use [meteolab.cdm])
   (:use [clojure.test])
   (:import [ucar.units UnitFormatManager]))
